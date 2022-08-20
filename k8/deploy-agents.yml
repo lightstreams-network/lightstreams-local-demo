@@ -1,0 +1,211 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-node1
+  labels:
+    app: agent-node1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-node1
+  template: 
+    metadata:
+      name: agent-node1
+      labels:
+        app: agent-node1
+    spec:
+      volumes:
+      - name: node1
+        hostPath:
+          path: /mnt/deploy/node1
+          type: Directory
+      containers:
+      - name: agent-container1
+        image: lightstreams/leth-0.33.0-alpha-demo:latest
+        imagePullPolicy: Never 
+        volumeMounts:
+          - name: node1
+            mountPath: /srv/lightchain
+        env:
+          - name: AGENT_HOME
+            value: "/root/.lightstreams_1"
+        ports:
+          - containerPort: 4002
+          - containerPort: 9091
+        command:
+          - bash
+          - "-c"
+          - |
+
+            if [ ! -f $AGENT_HOME/config.json ]; then
+              leth init --nodeid=1 --network=sirius --lightclient=true --federation=false --demo=true --blockchain_url=http://$VALIDATOR_ETH1_PORT_8545_TCP_ADDR:8545 || exit 1
+              mkdir -p $AGENT_HOME/sirius/database/keystore
+              
+              cp -r /srv/lightchain/config/UTC--2024-03-31T14-44-22.154522000Z--c69e5c2570db605a9c55dd7f513e23325ad8a8e1 $AGENT_HOME/sirius/database/keystore
+              cp -r /srv/lightchain/config/UTC--2019-01-16T08-35-20.225Z--61f3b85929c20980176d4a09771284625685c40e $AGENT_HOME/sirius/database/keystore
+            
+              cp -r /srv/lightchain/ipfs.config $AGENT_HOME/ipfs/config
+              
+            fi
+
+            leth run --nodeid=1 --network=sirius --https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-node2
+  labels:
+    app: agent-node2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-node2
+  template: 
+    metadata:
+      name: agent-node2
+      labels:
+        app: agent-node2
+    spec:
+      volumes:
+      - name: node2
+        hostPath:
+          path: /mnt/deploy/node2
+          type: Directory
+      containers:
+      - name: agent-container2
+        image: lightstreams/leth-0.33.0-alpha-demo:latest
+        imagePullPolicy: Never 
+        volumeMounts:
+          - name: node2
+            mountPath: /srv/lightchain
+        env:
+          - name: AGENT_HOME
+            value: "/root/.lightstreams_1"
+        ports:
+          - containerPort: 4002
+          - containerPort: 9091
+        command:
+          - bash
+          - "-c"
+          - |
+
+            if [ ! -f $AGENT_HOME/config.json ]; then
+              leth init --nodeid=1 --network=sirius --lightclient=true --federation=false --demo=true --blockchain_url=http://$VALIDATOR_ETH1_PORT_8545_TCP_ADDR:8545 || exit 1
+              mkdir -p $AGENT_HOME/sirius/database/keystore
+              
+              cp -r /srv/lightchain/config/UTC--2024-03-31T17-53-19.797023000Z--80b31f1d87aa472c9ea8e88c58ffd6ad231234f2 $AGENT_HOME/sirius/database/keystore
+              cp -r /srv/lightchain/config/UTC--2019-01-16T08-35-20.225Z--61f3b85929c20980176d4a09771284625685c40e $AGENT_HOME/sirius/database/keystore
+
+              cp -r /srv/lightchain/ipfs.config $AGENT_HOME/ipfs/config
+              
+            fi
+
+            LETH_LOG_LEVEL=debug leth run --nodeid=1 --network=sirius --https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-node3
+  labels:
+    app: agent-node3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-node3
+  template: 
+    metadata:
+      name: agent-node3
+      labels:
+        app: agent-node3
+    spec:
+      volumes:
+      - name: node3
+        hostPath:
+          path: /mnt/deploy/node3
+          type: Directory
+      containers:
+      - name: agent-container2
+        image: lightstreams/leth-0.33.0-alpha-demo:latest
+        imagePullPolicy: Never 
+        volumeMounts:
+          - name: node3
+            mountPath: /srv/lightchain
+        env:
+          - name: AGENT_HOME
+            value: "/root/.lightstreams_1"
+        ports:
+          - containerPort: 4002
+          - containerPort: 9091
+        command:
+          - bash
+          - "-c"
+          - |
+
+            if [ ! -f $AGENT_HOME/config.json ]; then
+              leth init --nodeid=1 --network=sirius --lightclient=true --federation=false --demo=true --blockchain_url=http://$VALIDATOR_ETH1_PORT_8545_TCP_ADDR:8545 || exit 1
+              mkdir -p $AGENT_HOME/sirius/database/keystore
+              
+              cp -r /srv/lightchain/config/UTC--2024-03-31T21-24-09.555499000Z--3fc8d1295d1687f562e1f4265a7894893f43a365 $AGENT_HOME/sirius/database/keystore
+              cp -r /srv/lightchain/config/UTC--2019-01-16T08-35-20.225Z--61f3b85929c20980176d4a09771284625685c40e $AGENT_HOME/sirius/database/keystore
+
+              cp -r /srv/lightchain/ipfs.config $AGENT_HOME/ipfs/config
+              
+            fi
+
+            LETH_LOG_LEVEL=debug leth run --nodeid=1 --network=sirius --https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-node4
+  labels:
+    app: agent-node4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-node4
+  template: 
+    metadata:
+      name: agent-node4
+      labels:
+        app: agent-node4
+    spec:
+      volumes:
+      - name: node4
+        hostPath:
+          path: /mnt/deploy/node4
+          type: Directory
+      containers:
+      - name: agent-container2
+        image: lightstreams/leth-0.33.0-alpha-demo:latest
+        imagePullPolicy: Never 
+        volumeMounts:
+          - name: node4
+            mountPath: /srv/lightchain
+        env:
+          - name: AGENT_HOME
+            value: "/root/.lightstreams_1"
+        ports:
+          - containerPort: 4002
+          - containerPort: 9091
+        command:
+          - bash
+          - "-c"
+          - |
+
+            if [ ! -f $AGENT_HOME/config.json ]; then
+              leth init --nodeid=1 --network=sirius --lightclient=true --federation=false --demo=true --blockchain_url=http://$VALIDATOR_ETH1_PORT_8545_TCP_ADDR:8545 || exit 1
+              mkdir -p $AGENT_HOME/sirius/database/keystore
+              
+              cp -r /srv/lightchain/config/UTC--2024-03-31T21-24-17.470969000Z--5ad7b6dbf7532dc68ad57801c370d697596b2f42 $AGENT_HOME/sirius/database/keystore
+              cp -r /srv/lightchain/config/UTC--2019-01-16T08-35-20.225Z--61f3b85929c20980176d4a09771284625685c40e $AGENT_HOME/sirius/database/keystore
+
+              cp -r /srv/lightchain/ipfs.config $AGENT_HOME/ipfs/config
+              
+            fi
+
+            LETH_LOG_LEVEL=debug leth run --nodeid=1 --network=sirius --https
