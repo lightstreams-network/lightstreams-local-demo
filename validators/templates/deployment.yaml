@@ -1,0 +1,120 @@
+# templates/deployment.yaml
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pv0001-vol
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/pv0001"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv0001-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pv0001-vol
+  resources:
+    requests:
+      storage: 1Gi
+
+{{- range $i := until (int .Values.validators.count) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validator-node{{ add $i 1 }}
+  labels:
+    app: validator-node{{ add $i 1 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validator-node{{ add $i 1 }}
+  template:
+    metadata:
+      name: validator-node{{ add $i 1 }}
+      labels:
+        app: validator-node{{ add $i 1 }}
+    spec:
+      volumes:
+      - name: pv0001
+        persistentVolumeClaim:
+          claimName: pv0001-pvc
+      - name: config-volume
+        configMap:
+          name: {{ include "lightchain.fullname" $ }}-validator-config-{{ add $i 1 }}
+      initContainers:
+        - name: init-lightchain
+          image: lightstreams/lightchain:latest
+          volumeMounts:
+            - name: pv0001
+              mountPath: /srv/lightchain
+          env:
+          - name: LIGHTCHAIN_HOME
+            value: "/srv/lightchain/node{{ add $i 1 }}/init"
+          command: ["/bin/sh"]
+          args:
+          - "-c"
+          - |
+            if [ ! -f $LIGHTCHAIN_HOME/database/genesis.json ]; then
+              echo "Initialising Lightchain..."
+              mkdir -p $LIGHTCHAIN_HOME
+              lightchain init --datadir=${LIGHTCHAIN_HOME} --sirius || exit 1
+            fi
+      containers:
+      - name: validator-node{{ add $i 1 }}
+        image: lightstreams/lightchain:latest
+        volumeMounts:
+            - name: pv0001
+              mountPath: /srv/lightchain
+            - name: config-volume
+              mountPath: "/etc/config"
+        env:
+        - name: CONFIG_PATH
+          value: "/etc/config"
+        - name: SIRIUS_INIT
+          value: "/srv/lightchain/node{{ add $i 1 }}/init"
+        - name: SIRIUS_HOME
+          value: "/srv/lightchain/node{{ add $i 1 }}/sirius"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "20m"
+          limits:
+            memory: "1.0Gi"
+            cpu: "200m"
+        ports:
+          - containerPort: 8545
+          - containerPort: 26656
+          - containerPort: 26657
+          - containerPort: 26660
+          - containerPort: 26661
+        command:
+          - bash
+          - "-c"
+          - |
+
+            if [ ! -d ${CONFIG_PATH} ]; then
+              echo -e "Consensus node config folder does not exists: ${CONFIG_PATH}"
+              exit 1
+            fi
+            
+            if [ ! -f $SIRIUS_HOME/database/genesis.json ]; then
+              cp -r $SIRIUS_INIT $SIRIUS_HOME
+              
+              mkdir -p $SIRIUS_HOME/consensus
+              cp -r ${CONFIG_PATH}/ $SIRIUS_HOME/consensus
+            fi
+
+            lightchain run --datadir=${SIRIUS_HOME} --rpc --rpcaddr=0.0.0.0 --rpcvhosts=* --rpcport=8545 --rpcapi eth,net,web3,personal,admin
+{{- end }} 

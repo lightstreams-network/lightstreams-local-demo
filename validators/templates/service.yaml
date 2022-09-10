@@ -1,0 +1,24 @@
+# templates/service.yaml
+{{- $fullName := include "lightchain.fullname" . }}
+{{- $baseName := .Values.validators.baseName }}
+{{- $ports := .Values.validators.service.ports }}
+{{- range $i := until (int .Values.validators.count) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: validator-node{{ add $i 1 }}
+  labels:
+    {{- include "lightchain.labels" $ | nindent 4 }}
+spec:    
+  type: {{ $.Values.validators.service.type }}
+  selector:
+    app: validator-node{{ add $i 1 }}
+  ports:
+    {{- range $ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: TCP
+    {{- end }}  
+{{- end }}

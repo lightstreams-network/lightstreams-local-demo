@@ -1,0 +1,24 @@
+# values.yaml
+validators:
+  count: 4
+  baseName: validator
+  service:
+    type: ClusterIP
+    ports:
+    - name: eth-rpc
+      port: 8545
+      targetPort: 8545
+    - name: p2p
+      port: 26656
+      targetPort: 26656
+    - name: tmt
+      port: 26657
+      targetPort: 26657
+    - name: tmt-prometheus
+      port: 26660
+      targetPort: 26660
+    - name: lc-prometheus
+      port: 26661
+      targetPort: 26661
+
+

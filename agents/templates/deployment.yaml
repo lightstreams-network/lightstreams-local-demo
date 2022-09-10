@@ -1,0 +1,46 @@
+# templates/deployment.yaml
+
+{{- range $i := until (int .Values.agents.count) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-node{{ add $i 1 }}
+  labels:
+    app: agent-node{{ add $i 1 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-node{{ add $i 1 }}
+  template:
+    metadata:
+      name: agent-node{{ add $i 1 }}
+      labels:
+        app: agent-node{{ add $i 1 }}
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: agent-config-{{ add $i 1 }}
+      containers:
+      - name: agent-node{{ add $i 1 }}
+        image: lightstreams/agent-demo:latest
+        volumeMounts:
+          - name: config-volume
+            mountPath: "/etc/config"
+        env:
+          - name: AGENT_HOME
+            value: "/root/.lightstreams_1"
+        ports:
+          - containerPort: 4002
+          - containerPort: 9091
+        command:
+          - bash
+          - "-c"
+          - |
+
+            cp /etc/config/ipfs.config $AGENT_HOME/ipfs/config
+
+            leth run --nodeid=1 --network=sirius --https
+{{- end }} 

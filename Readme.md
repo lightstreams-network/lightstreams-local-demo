@@ -13,8 +13,11 @@ https://www.docker.com/products/docker-desktop/
 2. Kebernetes Controller (kubectl)
 https://kubernetes.io/docs/tasks/tools/
 
-2. Minikube.
+3. Minikube
 https://minikube.sigs.k8s.io/
+
+4. Helm
+https://helm.sh/docs/intro/install/
 
 ## Setup
 
@@ -29,42 +32,35 @@ $ cd lightstreams-local-demo
 $ minikube start --memory=4096 --cpus=2
 ```
 
-3. Load the lightchain image into minikube
+3. Create Lightchain Validators
 ```
-$ docker pull lightstreams/lightchain:latest
-$ minikube image load lightstreams/lightchain:latest
-```
-
-4. Load the leth image into minikube
-```
-$ docker pull lightstreams/leth-0.33.0-alpha-demo:latest
-$ minikube image load lightstreams/leth-0.33.0-alpha-demo:latest
+$ helm install validators ./validators
 ```
 
-5. Mount the /deploy directory
+4. Create Lightchain Agents
 ```
-$ minikube mount ./deploy:/mnt/deploy
-```
-
-6. Create the validators
-```
-$ make create-validators
+$ helm install agents ./agents
 ```
 
-7. Create each agent
-```
-$ make create-agent1
-$ make create-agent2
-$ make create-agent3
-$ make create-agent4
-```
-
-8. In new consoles, launch the agent apps:
+5. In new consoles, launch the agent apps:
 ```
 $ minikube service agent-node1
 $ minikube service agent-node2
 $ minikube service agent-node3
 $ minikube service agent-node4
+```
+
+## Clean up
+
+1. Uninstall helm charts
+```
+$ helm uninstall agents
+$ helm uninstall validators
+```
+
+2. Delete minikube cluster
+```
+$ minikube delete --all
 ```
 
 ### Troubleshooting
@@ -84,8 +80,10 @@ $ kubectl log -f <podName>
 
 1. Download IPFS version 0.4.18 for your OS
 https://github.com/ipfs/kubo/releases/tag/v0.4.18
+
+Example for macOS:
 ```
-$ wget "https://github.com/ipfs/kubo/releases/download/v0.4.18/go-ipfs_v0.4.18_darwin-amd64.tar.gz" -O /usr/local/bin/ipfs
+$ wget "https://github.com/ipfs/kubo/releases/download/v0.4.18/go-ipfs_v0.4.18_darwin-amd64.tar.gz" 
 $ tar -xzvf go-ipfs_v0.4.18_darwin-amd64.tar.gz
 $ mv ./go-ipfs/ipfs /usr/local/bin/ipfs
 $ chmod u+x /usr/local/bin/ipfs
@@ -109,7 +107,7 @@ $ kubectl port-forward svc/agent-node1-ipfs 4002:4002
 
 5.  In another console:
 ```
-$ ipfs swarm connect /ip4/127.0.0.1/tcp/4002/ipfs/QmTyfeipju8zgS8QQU6LtucMNmJKrm12Vu2vVW7B9skUN1
+$ ipfs swarm connect /ip4/127.0.0.1/tcp/4002/ipfs/QmbrCC1nUnyGYzPuLHdu31mQG8Qf17trdDYqfnqxYtdAmG
 ```
 
 Then you can pull a file:
@@ -118,11 +116,3 @@ $ ipfs cat Qmd...
 ```
 
 
-## Clean up
-
-1. rm -rf ~/.lightstreams_1
-
-2. Delete minikube cluster
-```
-$ minikube delete --all
-```

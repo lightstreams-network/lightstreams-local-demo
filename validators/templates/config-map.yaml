@@ -1,0 +1,15 @@
+# templates/configmap.yaml
+{{- range $i := until (int .Values.validators.count) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lightchain.fullname" $ }}-validator-config-{{ add $i 1 }}
+data:
+  config.toml: |-
+{{ $.Files.Get (printf "files/validator%d/config.toml" (add $i 1)) | indent 4 }}
+  node_key.json: |-
+{{ $.Files.Get (printf "files/validator%d/node_key.json" (add $i 1)) | indent 4 }}
+  priv_validator_key.json: |-
+{{ $.Files.Get (printf "files/validator%d/priv_validator_key.json" (add $i 1)) | indent 4 }}
+{{- end }} 

@@ -1,0 +1,11 @@
+# templates/configmap.yaml
+{{- range $i := until (int .Values.agents.count) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config-{{ add $i 1 }}
+data:
+  ipfs.config: |-
+{{ $.Files.Get (printf "files/ipfs%d.config" (add $i 1)) | indent 4 }}
+{{- end }} 
